@@ -13,6 +13,7 @@ import Url.Parser as UP exposing (..)
 
 import File
 import File.Select as FS exposing (..)
+import Task
 
 port receivedUserInfo : (User -> msg) -> Sub msg
 
@@ -36,6 +37,7 @@ type alias Model =
   , title : String
   , userInfo : Maybe User
   , route : Route
+  , imgFile : Maybe String
   }
 
 init : JD.Value ->  Url.Url -> Nav.Key -> (Model, Cmd Msg)
@@ -48,7 +50,7 @@ init flags url key =
                   Err e ->
                     { initUrl = "FlagsData Decoer Error." }
   in
-    ( Model flagsData url key "abc" Nothing NotFound
+    ( Model flagsData url key "abc" Nothing NotFound Nothing
     , Cmd.none
     )
 
@@ -106,10 +108,36 @@ type Msg
   = UrlRequested Browser.UrlRequest
   | UrlChanged Url.Url
   | ReceivedUserInfo User
+  | ImgFileRequested
+  | ImgFileSelected File.File
+  | ImgFileLoaded (Result String String)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case Debug.log "msg : " msg of
+    ImgFileRequested ->
+      ( model
+      , FS.file ["image/jpeg"] ImgFileSelected
+      )
+
+    ImgFileSelected file ->
+      ( model
+      , Task.attempt ImgFileLoaded <| File.toUrl file
+      )
+
+    ImgFileLoaded result ->
+      let
+        imgFile = case result of
+                    Ok url ->
+                      url
+                    Err e ->
+                      Debug.toString e
+                    
+      in
+        ( { model | imgFile = Just imgFile }
+        , Cmd.none
+        )
+
     UrlRequested urlRequest ->
       case urlRequest of
         Browser.Internal url ->
@@ -176,9 +204,27 @@ view model =
             About ->
               div [] [ text "ABOUT PAGE" ]
         ]
+      , viewFile model
       ]
   ]}
 
 viewLink : String -> Html Msg
 viewLink path =
   li [] [ a [ href path ] [ text path ] ]
+
+viewFile : Model -> Html Msg
+viewFile model =
+  div []
+    [
+      button [ onClick ImgFileRequested ] [ text "ImgFileRequested"]
+    , div []
+      [
+        viewImg <| Maybe.withDefault "" model.imgFile
+      ]
+    ]
+
+
+viewImg : String -> Html Msg
+viewImg imgFileUrl =
+  img [ src imgFileUrl ] []
+

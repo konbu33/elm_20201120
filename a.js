@@ -4940,6 +4940,184 @@ function _Browser_load(url)
 }
 
 
+
+// DECODER
+
+var _File_decoder = _Json_decodePrim(function(value) {
+	// NOTE: checks if `File` exists in case this is run on node
+	return (typeof File !== 'undefined' && value instanceof File)
+		? $elm$core$Result$Ok(value)
+		: _Json_expecting('a FILE', value);
+});
+
+
+// METADATA
+
+function _File_name(file) { return file.name; }
+function _File_mime(file) { return file.type; }
+function _File_size(file) { return file.size; }
+
+function _File_lastModified(file)
+{
+	return $elm$time$Time$millisToPosix(file.lastModified);
+}
+
+
+// DOWNLOAD
+
+var _File_downloadNode;
+
+function _File_getDownloadNode()
+{
+	return _File_downloadNode || (_File_downloadNode = document.createElement('a'));
+}
+
+var _File_download = F3(function(name, mime, content)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var blob = new Blob([content], {type: mime});
+
+		// for IE10+
+		if (navigator.msSaveOrOpenBlob)
+		{
+			navigator.msSaveOrOpenBlob(blob, name);
+			return;
+		}
+
+		// for HTML5
+		var node = _File_getDownloadNode();
+		var objectUrl = URL.createObjectURL(blob);
+		node.href = objectUrl;
+		node.download = name;
+		_File_click(node);
+		URL.revokeObjectURL(objectUrl);
+	});
+});
+
+function _File_downloadUrl(href)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var node = _File_getDownloadNode();
+		node.href = href;
+		node.download = '';
+		node.origin === location.origin || (node.target = '_blank');
+		_File_click(node);
+	});
+}
+
+
+// IE COMPATIBILITY
+
+function _File_makeBytesSafeForInternetExplorer(bytes)
+{
+	// only needed by IE10 and IE11 to fix https://github.com/elm/file/issues/10
+	// all other browsers can just run `new Blob([bytes])` directly with no problem
+	//
+	return new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+}
+
+function _File_click(node)
+{
+	// only needed by IE10 and IE11 to fix https://github.com/elm/file/issues/11
+	// all other browsers have MouseEvent and do not need this conditional stuff
+	//
+	if (typeof MouseEvent === 'function')
+	{
+		node.dispatchEvent(new MouseEvent('click'));
+	}
+	else
+	{
+		var event = document.createEvent('MouseEvents');
+		event.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+		document.body.appendChild(node);
+		node.dispatchEvent(event);
+		document.body.removeChild(node);
+	}
+}
+
+
+// UPLOAD
+
+var _File_node;
+
+function _File_uploadOne(mimes)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		_File_node = document.createElement('input');
+		_File_node.type = 'file';
+		_File_node.accept = A2($elm$core$String$join, ',', mimes);
+		_File_node.addEventListener('change', function(event)
+		{
+			callback(_Scheduler_succeed(event.target.files[0]));
+		});
+		_File_click(_File_node);
+	});
+}
+
+function _File_uploadOneOrMore(mimes)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		_File_node = document.createElement('input');
+		_File_node.type = 'file';
+		_File_node.multiple = true;
+		_File_node.accept = A2($elm$core$String$join, ',', mimes);
+		_File_node.addEventListener('change', function(event)
+		{
+			var elmFiles = _List_fromArray(event.target.files);
+			callback(_Scheduler_succeed(_Utils_Tuple2(elmFiles.a, elmFiles.b)));
+		});
+		_File_click(_File_node);
+	});
+}
+
+
+// CONTENT
+
+function _File_toString(blob)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var reader = new FileReader();
+		reader.addEventListener('loadend', function() {
+			callback(_Scheduler_succeed(reader.result));
+		});
+		reader.readAsText(blob);
+		return function() { reader.abort(); };
+	});
+}
+
+function _File_toBytes(blob)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var reader = new FileReader();
+		reader.addEventListener('loadend', function() {
+			callback(_Scheduler_succeed(new DataView(reader.result)));
+		});
+		reader.readAsArrayBuffer(blob);
+		return function() { reader.abort(); };
+	});
+}
+
+function _File_toUrl(blob)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var reader = new FileReader();
+		reader.addEventListener('loadend', function() {
+			callback(_Scheduler_succeed(reader.result));
+		});
+		reader.readAsDataURL(blob);
+		return function() { reader.abort(); };
+	});
+}
+
+
+
 function _Url_percentEncode(string)
 {
 	return encodeURIComponent(string);
@@ -10559,9 +10737,9 @@ var $elm$core$Basics$never = function (_v0) {
 	}
 };
 var $elm$browser$Browser$application = _Browser_application;
-var $author$project$A$Model = F6(
-	function (flagsData, url, navKey, title, userInfo, route) {
-		return {flagsData: flagsData, navKey: navKey, route: route, title: title, url: url, userInfo: userInfo};
+var $author$project$A$Model = F7(
+	function (flagsData, url, navKey, title, userInfo, route, imgFile) {
+		return {flagsData: flagsData, imgFile: imgFile, navKey: navKey, route: route, title: title, url: url, userInfo: userInfo};
 	});
 var $author$project$A$NotFound = {$: 'NotFound'};
 var $author$project$A$FlagsData = function (initUrl) {
@@ -10588,7 +10766,7 @@ var $author$project$A$init = F3(
 			}
 		}();
 		return _Utils_Tuple2(
-			A6($author$project$A$Model, flagsData, url, key, 'abc', $elm$core$Maybe$Nothing, $author$project$A$NotFound),
+			A7($author$project$A$Model, flagsData, url, key, 'abc', $elm$core$Maybe$Nothing, $author$project$A$NotFound, $elm$core$Maybe$Nothing),
 			$elm$core$Platform$Cmd$none);
 	});
 var $author$project$A$ReceivedUserInfo = function (a) {
@@ -10622,6 +10800,42 @@ var $author$project$A$subsc = function (model) {
 				$author$project$A$receivedUserInfo($author$project$A$ReceivedUserInfo)
 			]));
 };
+var $author$project$A$ImgFileLoaded = function (a) {
+	return {$: 'ImgFileLoaded', a: a};
+};
+var $author$project$A$ImgFileSelected = function (a) {
+	return {$: 'ImgFileSelected', a: a};
+};
+var $elm$core$Task$onError = _Scheduler_onError;
+var $elm$core$Task$attempt = F2(
+	function (resultToMessage, task) {
+		return $elm$core$Task$command(
+			$elm$core$Task$Perform(
+				A2(
+					$elm$core$Task$onError,
+					A2(
+						$elm$core$Basics$composeL,
+						A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+						$elm$core$Result$Err),
+					A2(
+						$elm$core$Task$andThen,
+						A2(
+							$elm$core$Basics$composeL,
+							A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+							$elm$core$Result$Ok),
+						task))));
+	});
+var $elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
+};
+var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
+var $elm$file$File$Select$file = F2(
+	function (mimes, toMsg) {
+		return A2(
+			$elm$core$Task$perform,
+			toMsg,
+			_File_uploadOne(mimes));
+	});
 var $elm$browser$Browser$Navigation$load = _Browser_load;
 var $elm$core$Debug$log = _Debug_log;
 var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
@@ -10850,6 +11064,7 @@ var $author$project$A$toRoute = function (urlStr) {
 			A2($elm$url$Url$Parser$parse, $author$project$A$route, url));
 	}
 };
+var $elm$core$Debug$toString = _Debug_toString;
 var $elm$url$Url$addPort = F2(
 	function (maybePort, starter) {
 		if (maybePort.$ === 'Nothing') {
@@ -10894,10 +11109,45 @@ var $elm$url$Url$toString = function (url) {
 					_Utils_ap(http, url.host)),
 				url.path)));
 };
+var $elm$file$File$toUrl = _File_toUrl;
 var $author$project$A$update = F2(
 	function (msg, model) {
 		var _v0 = A2($elm$core$Debug$log, 'msg : ', msg);
 		switch (_v0.$) {
+			case 'ImgFileRequested':
+				return _Utils_Tuple2(
+					model,
+					A2(
+						$elm$file$File$Select$file,
+						_List_fromArray(
+							['image/jpeg']),
+						$author$project$A$ImgFileSelected));
+			case 'ImgFileSelected':
+				var file = _v0.a;
+				return _Utils_Tuple2(
+					model,
+					A2(
+						$elm$core$Task$attempt,
+						$author$project$A$ImgFileLoaded,
+						$elm$file$File$toUrl(file)));
+			case 'ImgFileLoaded':
+				var result = _v0.a;
+				var imgFile = function () {
+					if (result.$ === 'Ok') {
+						var url = result.a;
+						return url;
+					} else {
+						var e = result.a;
+						return $elm$core$Debug$toString(e);
+					}
+				}();
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							imgFile: $elm$core$Maybe$Just(imgFile)
+						}),
+					$elm$core$Platform$Cmd$none);
 			case 'UrlRequested':
 				var urlRequest = _v0.a;
 				if (urlRequest.$ === 'Internal') {
@@ -10927,7 +11177,7 @@ var $author$project$A$update = F2(
 					$elm$core$Platform$Cmd$none);
 			default:
 				var userInfo = _v0.a;
-				var _v2 = A2($elm$core$Debug$log, 'userInfo : ', userInfo);
+				var _v3 = A2($elm$core$Debug$log, 'userInfo : ', userInfo);
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -10937,7 +11187,49 @@ var $author$project$A$update = F2(
 					$elm$core$Platform$Cmd$none);
 		}
 	});
-var $elm$core$Debug$toString = _Debug_toString;
+var $author$project$A$ImgFileRequested = {$: 'ImgFileRequested'};
+var $elm$html$Html$img = _VirtualDom_node('img');
+var $elm$html$Html$Attributes$src = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
+};
+var $author$project$A$viewImg = function (imgFileUrl) {
+	return A2(
+		$elm$html$Html$img,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$src(imgFileUrl)
+			]),
+		_List_Nil);
+};
+var $author$project$A$viewFile = function (model) {
+	return A2(
+		$elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick($author$project$A$ImgFileRequested)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('ImgFileRequested')
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$author$project$A$viewImg(
+						A2($elm$core$Maybe$withDefault, '', model.imgFile))
+					]))
+			]));
+};
 var $author$project$A$viewLink = function (path) {
 	return A2(
 		$elm$html$Html$li,
@@ -11049,7 +11341,8 @@ var $author$project$A$view = function (model) {
 												]));
 								}
 							}()
-							]))
+							])),
+						$author$project$A$viewFile(model)
 					]))
 			]),
 		title: model.title
@@ -11057,4 +11350,4 @@ var $author$project$A$view = function (model) {
 };
 var $author$project$A$main = $elm$browser$Browser$application(
 	{init: $author$project$A$init, onUrlChange: $author$project$A$UrlChanged, onUrlRequest: $author$project$A$UrlRequested, subscriptions: $author$project$A$subsc, update: $author$project$A$update, view: $author$project$A$view});
-_Platform_export({'A':{'init':$author$project$A$main($elm$json$Json$Decode$value)({"versions":{"elm":"0.19.1"},"types":{"message":"A.Msg","aliases":{"Url.Url":{"args":[],"type":"{ protocol : Url.Protocol, host : String.String, port_ : Maybe.Maybe Basics.Int, path : String.String, query : Maybe.Maybe String.String, fragment : Maybe.Maybe String.String }"},"A.User":{"args":[],"type":"{ id : String.String, name : String.String, age : Basics.Int }"}},"unions":{"A.Msg":{"args":[],"tags":{"UrlRequested":["Browser.UrlRequest"],"UrlChanged":["Url.Url"],"ReceivedUserInfo":["A.User"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Url.Protocol":{"args":[],"tags":{"Http":[],"Https":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Browser.UrlRequest":{"args":[],"tags":{"Internal":["Url.Url"],"External":["String.String"]}}}}})}});}(this));
+_Platform_export({'A':{'init':$author$project$A$main($elm$json$Json$Decode$value)({"versions":{"elm":"0.19.1"},"types":{"message":"A.Msg","aliases":{"Url.Url":{"args":[],"type":"{ protocol : Url.Protocol, host : String.String, port_ : Maybe.Maybe Basics.Int, path : String.String, query : Maybe.Maybe String.String, fragment : Maybe.Maybe String.String }"},"A.User":{"args":[],"type":"{ id : String.String, name : String.String, age : Basics.Int }"}},"unions":{"A.Msg":{"args":[],"tags":{"UrlRequested":["Browser.UrlRequest"],"UrlChanged":["Url.Url"],"ReceivedUserInfo":["A.User"],"ImgFileRequested":[],"ImgFileSelected":["File.File"],"ImgFileLoaded":["Result.Result String.String String.String"]}},"File.File":{"args":[],"tags":{"File":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Url.Protocol":{"args":[],"tags":{"Http":[],"Https":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Browser.UrlRequest":{"args":[],"tags":{"Internal":["Url.Url"],"External":["String.String"]}}}}})}});}(this));
