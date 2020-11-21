@@ -10766,7 +10766,7 @@ var $author$project$A$init = F3(
 			}
 		}();
 		return _Utils_Tuple2(
-			A7($author$project$A$Model, flagsData, url, key, 'abc', $elm$core$Maybe$Nothing, $author$project$A$NotFound, $elm$core$Maybe$Nothing),
+			A7($author$project$A$Model, flagsData, url, key, 'abc', $elm$core$Maybe$Nothing, $author$project$A$NotFound, _List_Nil),
 			$elm$core$Platform$Cmd$none);
 	});
 var $author$project$A$ReceivedUserInfo = function (a) {
@@ -10803,9 +10803,10 @@ var $author$project$A$subsc = function (model) {
 var $author$project$A$ImgFileLoaded = function (a) {
 	return {$: 'ImgFileLoaded', a: a};
 };
-var $author$project$A$ImgFileSelected = function (a) {
-	return {$: 'ImgFileSelected', a: a};
-};
+var $author$project$A$ImgFileSelected = F2(
+	function (a, b) {
+		return {$: 'ImgFileSelected', a: a, b: b};
+	});
 var $elm$core$Task$onError = _Scheduler_onError;
 var $elm$core$Task$attempt = F2(
 	function (resultToMessage, task) {
@@ -10829,12 +10830,16 @@ var $elm$time$Time$Posix = function (a) {
 	return {$: 'Posix', a: a};
 };
 var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
-var $elm$file$File$Select$file = F2(
+var $elm$file$File$Select$files = F2(
 	function (mimes, toMsg) {
 		return A2(
 			$elm$core$Task$perform,
-			toMsg,
-			_File_uploadOne(mimes));
+			function (_v0) {
+				var f = _v0.a;
+				var fs = _v0.b;
+				return A2(toMsg, f, fs);
+			},
+			_File_uploadOneOrMore(mimes));
 	});
 var $elm$browser$Browser$Navigation$load = _Browser_load;
 var $elm$core$Debug$log = _Debug_log;
@@ -11118,18 +11123,25 @@ var $author$project$A$update = F2(
 				return _Utils_Tuple2(
 					model,
 					A2(
-						$elm$file$File$Select$file,
+						$elm$file$File$Select$files,
 						_List_fromArray(
 							['image/jpeg']),
 						$author$project$A$ImgFileSelected));
 			case 'ImgFileSelected':
 				var file = _v0.a;
+				var files = _v0.b;
+				var taskList = A2(
+					$elm$core$List$map,
+					$elm$file$File$toUrl,
+					A2($elm$core$List$cons, file, files));
+				var cmdList = A2(
+					$elm$core$List$map,
+					$elm$core$Task$attempt($author$project$A$ImgFileLoaded),
+					taskList);
+				var _v1 = A2($elm$core$Debug$log, 'taskList : ', taskList);
 				return _Utils_Tuple2(
 					model,
-					A2(
-						$elm$core$Task$attempt,
-						$author$project$A$ImgFileLoaded,
-						$elm$file$File$toUrl(file)));
+					$elm$core$Platform$Cmd$batch(cmdList));
 			case 'ImgFileLoaded':
 				var result = _v0.a;
 				var imgFile = function () {
@@ -11145,7 +11157,10 @@ var $author$project$A$update = F2(
 					_Utils_update(
 						model,
 						{
-							imgFile: $elm$core$Maybe$Just(imgFile)
+							imgFile: A2(
+								$elm$core$List$cons,
+								$elm$core$Maybe$Just(imgFile),
+								model.imgFile)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'UrlRequested':
@@ -11177,7 +11192,7 @@ var $author$project$A$update = F2(
 					$elm$core$Platform$Cmd$none);
 			default:
 				var userInfo = _v0.a;
-				var _v3 = A2($elm$core$Debug$log, 'userInfo : ', userInfo);
+				var _v4 = A2($elm$core$Debug$log, 'userInfo : ', userInfo);
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -11211,6 +11226,14 @@ var $author$project$A$viewFile = function (model) {
 		_List_fromArray(
 			[
 				A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						$elm$core$Debug$toString(model.imgFile))
+					])),
+				A2(
 				$elm$html$Html$button,
 				_List_fromArray(
 					[
@@ -11223,11 +11246,13 @@ var $author$project$A$viewFile = function (model) {
 				A2(
 				$elm$html$Html$div,
 				_List_Nil,
-				_List_fromArray(
-					[
-						$author$project$A$viewImg(
-						A2($elm$core$Maybe$withDefault, '', model.imgFile))
-					]))
+				A2(
+					$elm$core$List$map,
+					function (file) {
+						return $author$project$A$viewImg(
+							A2($elm$core$Maybe$withDefault, '', file));
+					},
+					model.imgFile))
 			]));
 };
 var $author$project$A$viewLink = function (path) {
@@ -11350,4 +11375,4 @@ var $author$project$A$view = function (model) {
 };
 var $author$project$A$main = $elm$browser$Browser$application(
 	{init: $author$project$A$init, onUrlChange: $author$project$A$UrlChanged, onUrlRequest: $author$project$A$UrlRequested, subscriptions: $author$project$A$subsc, update: $author$project$A$update, view: $author$project$A$view});
-_Platform_export({'A':{'init':$author$project$A$main($elm$json$Json$Decode$value)({"versions":{"elm":"0.19.1"},"types":{"message":"A.Msg","aliases":{"Url.Url":{"args":[],"type":"{ protocol : Url.Protocol, host : String.String, port_ : Maybe.Maybe Basics.Int, path : String.String, query : Maybe.Maybe String.String, fragment : Maybe.Maybe String.String }"},"A.User":{"args":[],"type":"{ id : String.String, name : String.String, age : Basics.Int }"}},"unions":{"A.Msg":{"args":[],"tags":{"UrlRequested":["Browser.UrlRequest"],"UrlChanged":["Url.Url"],"ReceivedUserInfo":["A.User"],"ImgFileRequested":[],"ImgFileSelected":["File.File"],"ImgFileLoaded":["Result.Result String.String String.String"]}},"File.File":{"args":[],"tags":{"File":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Url.Protocol":{"args":[],"tags":{"Http":[],"Https":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Browser.UrlRequest":{"args":[],"tags":{"Internal":["Url.Url"],"External":["String.String"]}}}}})}});}(this));
+_Platform_export({'A':{'init':$author$project$A$main($elm$json$Json$Decode$value)({"versions":{"elm":"0.19.1"},"types":{"message":"A.Msg","aliases":{"Url.Url":{"args":[],"type":"{ protocol : Url.Protocol, host : String.String, port_ : Maybe.Maybe Basics.Int, path : String.String, query : Maybe.Maybe String.String, fragment : Maybe.Maybe String.String }"},"A.User":{"args":[],"type":"{ id : String.String, name : String.String, age : Basics.Int }"}},"unions":{"A.Msg":{"args":[],"tags":{"UrlRequested":["Browser.UrlRequest"],"UrlChanged":["Url.Url"],"ReceivedUserInfo":["A.User"],"ImgFileRequested":[],"ImgFileSelected":["File.File","List.List File.File"],"ImgFileLoaded":["Result.Result String.String String.String"]}},"File.File":{"args":[],"tags":{"File":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"List.List":{"args":["a"],"tags":{}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Url.Protocol":{"args":[],"tags":{"Http":[],"Https":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Browser.UrlRequest":{"args":[],"tags":{"Internal":["Url.Url"],"External":["String.String"]}}}}})}});}(this));
