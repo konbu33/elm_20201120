@@ -37,7 +37,7 @@ type alias Model =
   , title : String
   , userInfo : Maybe User
   , route : Route
-  , imgFile : Maybe String
+  , imgFile : List (Maybe String)
   }
 
 init : JD.Value ->  Url.Url -> Nav.Key -> (Model, Cmd Msg)
@@ -50,7 +50,7 @@ init flags url key =
                   Err e ->
                     { initUrl = "FlagsData Decoer Error." }
   in
-    ( Model flagsData url key "abc" Nothing NotFound Nothing
+    ( Model flagsData url key "abc" Nothing NotFound []
     , Cmd.none
     )
 
@@ -109,7 +109,7 @@ type Msg
   | UrlChanged Url.Url
   | ReceivedUserInfo User
   | ImgFileRequested
-  | ImgFileSelected File.File
+  | ImgFileSelected File.File (List File.File)
   | ImgFileLoaded (Result String String)
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -117,13 +117,20 @@ update msg model =
   case Debug.log "msg : " msg of
     ImgFileRequested ->
       ( model
-      , FS.file ["image/jpeg"] ImgFileSelected
+      , FS.files ["image/jpeg"] ImgFileSelected
       )
 
-    ImgFileSelected file ->
-      ( model
-      , Task.attempt ImgFileLoaded <| File.toUrl file
-      )
+    ImgFileSelected file files ->
+      let
+        taskList = List.map File.toUrl <| file :: files
+        _ = Debug.log "taskList : " taskList
+        cmdList = List.map (Task.attempt ImgFileLoaded) taskList
+      in
+        ( model
+        , Cmd.batch cmdList
+        --, Cmd.batch <| List.map (\f -> Task.attempt ImgFileLoaded <| File.toUrl f ) (file :: files)
+        --, Cmd.batch <| List.map (\task -> Task.attempt ImgFileLoaded task) fileUrlList
+        )
 
     ImgFileLoaded result ->
       let
@@ -134,7 +141,7 @@ update msg model =
                       Debug.toString e
                     
       in
-        ( { model | imgFile = Just imgFile }
+        ( { model | imgFile = Just imgFile :: model.imgFile }
         , Cmd.none
         )
 
@@ -216,11 +223,13 @@ viewFile : Model -> Html Msg
 viewFile model =
   div []
     [
-      button [ onClick ImgFileRequested ] [ text "ImgFileRequested"]
+      div [] [ text <| Debug.toString model.imgFile ]
+    , button [ onClick ImgFileRequested ] [ text "ImgFileRequested"]
     , div []
-      [
-        viewImg <| Maybe.withDefault "" model.imgFile
-      ]
+      (
+        List.map (\file -> viewImg <| Maybe.withDefault "" file ) model.imgFile
+        --viewImg <| Maybe.withDefault "" model.imgFile
+      )
     ]
 
 
