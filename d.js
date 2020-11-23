@@ -5116,28 +5116,11 @@ function _File_toUrl(blob)
 	});
 }
 
-
-
-function _Url_percentEncode(string)
-{
-	return encodeURIComponent(string);
-}
-
-function _Url_percentDecode(string)
-{
-	try
-	{
-		return $elm$core$Maybe$Just(decodeURIComponent(string));
-	}
-	catch (e)
-	{
-		return $elm$core$Maybe$Nothing;
-	}
-}var $author$project$A$UrlChanged = function (a) {
-	return {$: 'UrlChanged', a: a};
+var $author$project$D$OnUrlChanged = function (a) {
+	return {$: 'OnUrlChanged', a: a};
 };
-var $author$project$A$UrlRequested = function (a) {
-	return {$: 'UrlRequested', a: a};
+var $author$project$D$OnUrlRequested = function (a) {
+	return {$: 'OnUrlRequested', a: a};
 };
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
@@ -10737,94 +10720,24 @@ var $elm$core$Basics$never = function (_v0) {
 	}
 };
 var $elm$browser$Browser$application = _Browser_application;
-var $author$project$A$Model = F8(
-	function (flagsData, url, navKey, title, userInfo, route, imgFile, fileList) {
-		return {fileList: fileList, flagsData: flagsData, imgFile: imgFile, navKey: navKey, route: route, title: title, url: url, userInfo: userInfo};
+var $author$project$D$Model = F4(
+	function (hover, files, url, navKey) {
+		return {files: files, hover: hover, navKey: navKey, url: url};
 	});
-var $author$project$A$NotFound = {$: 'NotFound'};
-var $author$project$A$FlagsData = function (initUrl) {
-	return {initUrl: initUrl};
-};
-var $author$project$A$initUrlDecoder = A2(
-	$elm$json$Json$Decode$map,
-	$author$project$A$FlagsData,
-	A2(
-		$elm$json$Json$Decode$at,
-		_List_fromArray(
-			['initUrl']),
-		$elm$json$Json$Decode$string));
-var $author$project$A$init = F3(
-	function (flags, url, key) {
-		var result = A2($elm$json$Json$Decode$decodeValue, $author$project$A$initUrlDecoder, flags);
-		var flagsData = function () {
-			if (result.$ === 'Ok') {
-				var data = result.a;
-				return data;
-			} else {
-				var e = result.a;
-				return {initUrl: 'FlagsData Decoer Error.'};
-			}
-		}();
+var $author$project$D$init = F3(
+	function (_v0, url, key) {
 		return _Utils_Tuple2(
-			A8($author$project$A$Model, flagsData, url, key, 'abc', $elm$core$Maybe$Nothing, $author$project$A$NotFound, _List_Nil, _List_Nil),
+			A4($author$project$D$Model, false, _List_Nil, url, key),
 			$elm$core$Platform$Cmd$none);
 	});
-var $author$project$A$ReceivedUserInfo = function (a) {
-	return {$: 'ReceivedUserInfo', a: a};
-};
 var $elm$core$Platform$Sub$batch = _Platform_batch;
-var $elm$json$Json$Decode$andThen = _Json_andThen;
-var $author$project$A$receivedUserInfo = _Platform_incomingPort(
-	'receivedUserInfo',
-	A2(
-		$elm$json$Json$Decode$andThen,
-		function (name) {
-			return A2(
-				$elm$json$Json$Decode$andThen,
-				function (id) {
-					return A2(
-						$elm$json$Json$Decode$andThen,
-						function (age) {
-							return $elm$json$Json$Decode$succeed(
-								{age: age, id: id, name: name});
-						},
-						A2($elm$json$Json$Decode$field, 'age', $elm$json$Json$Decode$int));
-				},
-				A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string));
-		},
-		A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string)));
-var $author$project$A$subsc = function (model) {
-	return $elm$core$Platform$Sub$batch(
-		_List_fromArray(
-			[
-				$author$project$A$receivedUserInfo($author$project$A$ReceivedUserInfo)
-			]));
+var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $author$project$D$subscriptions = function (model) {
+	return $elm$core$Platform$Sub$none;
 };
-var $author$project$A$ImgFileLoaded = function (a) {
-	return {$: 'ImgFileLoaded', a: a};
-};
-var $author$project$A$ImgFileSelected = F2(
+var $author$project$D$GotFiles = F2(
 	function (a, b) {
-		return {$: 'ImgFileSelected', a: a, b: b};
-	});
-var $elm$core$Task$onError = _Scheduler_onError;
-var $elm$core$Task$attempt = F2(
-	function (resultToMessage, task) {
-		return $elm$core$Task$command(
-			$elm$core$Task$Perform(
-				A2(
-					$elm$core$Task$onError,
-					A2(
-						$elm$core$Basics$composeL,
-						A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
-						$elm$core$Result$Err),
-					A2(
-						$elm$core$Task$andThen,
-						A2(
-							$elm$core$Basics$composeL,
-							A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
-							$elm$core$Result$Ok),
-						task))));
+		return {$: 'GotFiles', a: a, b: b};
 	});
 var $elm$time$Time$Posix = function (a) {
 	return {$: 'Posix', a: a};
@@ -10841,284 +10754,43 @@ var $elm$file$File$Select$files = F2(
 			},
 			_File_uploadOneOrMore(mimes));
 	});
-var $elm$browser$Browser$Navigation$load = _Browser_load;
 var $elm$core$Debug$log = _Debug_log;
-var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
-var $elm$url$Url$Parser$State = F5(
-	function (visited, unvisited, params, frag, value) {
-		return {frag: frag, params: params, unvisited: unvisited, value: value, visited: visited};
-	});
-var $elm$url$Url$Parser$getFirstMatch = function (states) {
-	getFirstMatch:
-	while (true) {
-		if (!states.b) {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var state = states.a;
-			var rest = states.b;
-			var _v1 = state.unvisited;
-			if (!_v1.b) {
-				return $elm$core$Maybe$Just(state.value);
-			} else {
-				if ((_v1.a === '') && (!_v1.b.b)) {
-					return $elm$core$Maybe$Just(state.value);
-				} else {
-					var $temp$states = rest;
-					states = $temp$states;
-					continue getFirstMatch;
-				}
-			}
-		}
-	}
-};
-var $elm$url$Url$Parser$removeFinalEmpty = function (segments) {
-	if (!segments.b) {
-		return _List_Nil;
-	} else {
-		if ((segments.a === '') && (!segments.b.b)) {
-			return _List_Nil;
-		} else {
-			var segment = segments.a;
-			var rest = segments.b;
-			return A2(
-				$elm$core$List$cons,
-				segment,
-				$elm$url$Url$Parser$removeFinalEmpty(rest));
-		}
-	}
-};
-var $elm$url$Url$Parser$preparePath = function (path) {
-	var _v0 = A2($elm$core$String$split, '/', path);
-	if (_v0.b && (_v0.a === '')) {
-		var segments = _v0.b;
-		return $elm$url$Url$Parser$removeFinalEmpty(segments);
-	} else {
-		var segments = _v0;
-		return $elm$url$Url$Parser$removeFinalEmpty(segments);
-	}
-};
-var $elm$url$Url$Parser$addToParametersHelp = F2(
-	function (value, maybeList) {
-		if (maybeList.$ === 'Nothing') {
-			return $elm$core$Maybe$Just(
-				_List_fromArray(
-					[value]));
-		} else {
-			var list = maybeList.a;
-			return $elm$core$Maybe$Just(
-				A2($elm$core$List$cons, value, list));
-		}
-	});
-var $elm$url$Url$percentDecode = _Url_percentDecode;
-var $elm$url$Url$Parser$addParam = F2(
-	function (segment, dict) {
-		var _v0 = A2($elm$core$String$split, '=', segment);
-		if ((_v0.b && _v0.b.b) && (!_v0.b.b.b)) {
-			var rawKey = _v0.a;
-			var _v1 = _v0.b;
-			var rawValue = _v1.a;
-			var _v2 = $elm$url$Url$percentDecode(rawKey);
-			if (_v2.$ === 'Nothing') {
-				return dict;
-			} else {
-				var key = _v2.a;
-				var _v3 = $elm$url$Url$percentDecode(rawValue);
-				if (_v3.$ === 'Nothing') {
-					return dict;
-				} else {
-					var value = _v3.a;
-					return A3(
-						$elm$core$Dict$update,
-						key,
-						$elm$url$Url$Parser$addToParametersHelp(value),
-						dict);
-				}
-			}
-		} else {
-			return dict;
-		}
-	});
-var $elm$url$Url$Parser$prepareQuery = function (maybeQuery) {
-	if (maybeQuery.$ === 'Nothing') {
-		return $elm$core$Dict$empty;
-	} else {
-		var qry = maybeQuery.a;
-		return A3(
-			$elm$core$List$foldr,
-			$elm$url$Url$Parser$addParam,
-			$elm$core$Dict$empty,
-			A2($elm$core$String$split, '&', qry));
-	}
-};
-var $elm$url$Url$Parser$parse = F2(
-	function (_v0, url) {
-		var parser = _v0.a;
-		return $elm$url$Url$Parser$getFirstMatch(
-			parser(
-				A5(
-					$elm$url$Url$Parser$State,
-					_List_Nil,
-					$elm$url$Url$Parser$preparePath(url.path),
-					$elm$url$Url$Parser$prepareQuery(url.query),
-					url.fragment,
-					$elm$core$Basics$identity)));
-	});
-var $author$project$A$About = {$: 'About'};
-var $author$project$A$Home = {$: 'Home'};
-var $author$project$A$Top = {$: 'Top'};
-var $elm$url$Url$Parser$Parser = function (a) {
-	return {$: 'Parser', a: a};
-};
-var $elm$url$Url$Parser$mapState = F2(
-	function (func, _v0) {
-		var visited = _v0.visited;
-		var unvisited = _v0.unvisited;
-		var params = _v0.params;
-		var frag = _v0.frag;
-		var value = _v0.value;
-		return A5(
-			$elm$url$Url$Parser$State,
-			visited,
-			unvisited,
-			params,
-			frag,
-			func(value));
-	});
-var $elm$url$Url$Parser$map = F2(
-	function (subValue, _v0) {
-		var parseArg = _v0.a;
-		return $elm$url$Url$Parser$Parser(
-			function (_v1) {
-				var visited = _v1.visited;
-				var unvisited = _v1.unvisited;
-				var params = _v1.params;
-				var frag = _v1.frag;
-				var value = _v1.value;
-				return A2(
-					$elm$core$List$map,
-					$elm$url$Url$Parser$mapState(value),
-					parseArg(
-						A5($elm$url$Url$Parser$State, visited, unvisited, params, frag, subValue)));
-			});
-	});
-var $elm$url$Url$Parser$oneOf = function (parsers) {
-	return $elm$url$Url$Parser$Parser(
-		function (state) {
-			return A2(
-				$elm$core$List$concatMap,
-				function (_v0) {
-					var parser = _v0.a;
-					return parser(state);
-				},
-				parsers);
-		});
-};
-var $elm$url$Url$Parser$s = function (str) {
-	return $elm$url$Url$Parser$Parser(
-		function (_v0) {
-			var visited = _v0.visited;
-			var unvisited = _v0.unvisited;
-			var params = _v0.params;
-			var frag = _v0.frag;
-			var value = _v0.value;
-			if (!unvisited.b) {
-				return _List_Nil;
-			} else {
-				var next = unvisited.a;
-				var rest = unvisited.b;
-				return _Utils_eq(next, str) ? _List_fromArray(
-					[
-						A5(
-						$elm$url$Url$Parser$State,
-						A2($elm$core$List$cons, next, visited),
-						rest,
-						params,
-						frag,
-						value)
-					]) : _List_Nil;
-			}
-		});
-};
-var $elm$url$Url$Parser$top = $elm$url$Url$Parser$Parser(
-	function (state) {
-		return _List_fromArray(
-			[state]);
-	});
-var $author$project$A$route = $elm$url$Url$Parser$oneOf(
-	_List_fromArray(
-		[
-			A2($elm$url$Url$Parser$map, $author$project$A$Top, $elm$url$Url$Parser$top),
-			A2(
-			$elm$url$Url$Parser$map,
-			$author$project$A$About,
-			$elm$url$Url$Parser$s('about')),
-			A2(
-			$elm$url$Url$Parser$map,
-			$author$project$A$Home,
-			$elm$url$Url$Parser$s('home'))
-		]));
-var $author$project$A$toRoute = function (urlStr) {
-	var _v0 = $elm$url$Url$fromString(urlStr);
-	if (_v0.$ === 'Nothing') {
-		return $author$project$A$NotFound;
-	} else {
-		var url = _v0.a;
-		return A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$A$NotFound,
-			A2($elm$url$Url$Parser$parse, $author$project$A$route, url));
-	}
-};
-var $elm$core$Debug$toString = _Debug_toString;
-var $elm$url$Url$addPort = F2(
-	function (maybePort, starter) {
-		if (maybePort.$ === 'Nothing') {
-			return starter;
-		} else {
-			var port_ = maybePort.a;
-			return starter + (':' + $elm$core$String$fromInt(port_));
-		}
-	});
-var $elm$url$Url$addPrefixed = F3(
-	function (prefix, maybeSegment, starter) {
-		if (maybeSegment.$ === 'Nothing') {
-			return starter;
-		} else {
-			var segment = maybeSegment.a;
-			return _Utils_ap(
-				starter,
-				_Utils_ap(prefix, segment));
-		}
-	});
-var $elm$url$Url$toString = function (url) {
-	var http = function () {
-		var _v0 = url.protocol;
-		if (_v0.$ === 'Http') {
-			return 'http://';
-		} else {
-			return 'https://';
-		}
-	}();
-	return A3(
-		$elm$url$Url$addPrefixed,
-		'#',
-		url.fragment,
-		A3(
-			$elm$url$Url$addPrefixed,
-			'?',
-			url.query,
-			_Utils_ap(
-				A2(
-					$elm$url$Url$addPort,
-					url.port_,
-					_Utils_ap(http, url.host)),
-				url.path)));
-};
-var $elm$file$File$toUrl = _File_toUrl;
-var $author$project$A$update = F2(
+var $author$project$D$update = F2(
 	function (msg, model) {
 		var _v0 = A2($elm$core$Debug$log, 'msg : ', msg);
 		switch (_v0.$) {
+			case 'OnUrlRequested':
+				var urlReqest = _v0.a;
+				if (urlReqest.$ === 'Internal') {
+					var url = urlReqest.a;
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				} else {
+					var href = urlReqest.a;
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
+			case 'OnUrlChanged':
+				var url = _v0.a;
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			case 'Pick':
+				return _Utils_Tuple2(
+					model,
+					A2(
+						$elm$file$File$Select$files,
+						_List_fromArray(
+							['image/*']),
+						$author$project$D$GotFiles));
+			case 'DragEnter':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{hover: true}),
+					$elm$core$Platform$Cmd$none);
+			case 'DragLeave':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{hover: false}),
+					$elm$core$Platform$Cmd$none);
 			case 'GotFiles':
 				var file = _v0.a;
 				var files = _v0.b;
@@ -11126,132 +10798,20 @@ var $author$project$A$update = F2(
 					_Utils_update(
 						model,
 						{
-							fileList: A2($elm$core$List$cons, file, files)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'OnDraggable':
-				var str = _v0.a;
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			case 'OnDropzone':
-				var str = _v0.a;
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			case 'OnDrag':
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			case 'OnDragover':
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			case 'OnDrop':
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			case 'ImgFileRequested':
-				return _Utils_Tuple2(
-					model,
-					A2(
-						$elm$file$File$Select$files,
-						_List_fromArray(
-							['image/jpeg']),
-						$author$project$A$ImgFileSelected));
-			case 'ImgFileSelected':
-				var file = _v0.a;
-				var files = _v0.b;
-				var taskList = A2(
-					$elm$core$List$map,
-					$elm$file$File$toUrl,
-					A2($elm$core$List$cons, file, files));
-				var cmdList = A2(
-					$elm$core$List$map,
-					$elm$core$Task$attempt($author$project$A$ImgFileLoaded),
-					taskList);
-				var _v1 = A2($elm$core$Debug$log, 'taskList : ', taskList);
-				return _Utils_Tuple2(
-					model,
-					$elm$core$Platform$Cmd$batch(cmdList));
-			case 'ImgaFileSelected':
-				var file = _v0.a;
-				return _Utils_Tuple2(
-					model,
-					A2(
-						$elm$core$Task$attempt,
-						$author$project$A$ImgFileLoaded,
-						$elm$file$File$toUrl(file)));
-			case 'ImgFileLoaded':
-				var result = _v0.a;
-				var imgFile = function () {
-					if (result.$ === 'Ok') {
-						var url = result.a;
-						return url;
-					} else {
-						var e = result.a;
-						return $elm$core$Debug$toString(e);
-					}
-				}();
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							imgFile: A2(
-								$elm$core$List$cons,
-								$elm$core$Maybe$Just(imgFile),
-								model.imgFile)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'UrlRequested':
-				var urlRequest = _v0.a;
-				if (urlRequest.$ === 'Internal') {
-					var url = urlRequest.a;
-					return _Utils_Tuple2(
-						model,
-						A2(
-							$elm$browser$Browser$Navigation$pushUrl,
-							model.navKey,
-							$elm$url$Url$toString(url)));
-				} else {
-					var href = urlRequest.a;
-					return _Utils_Tuple2(
-						model,
-						$elm$browser$Browser$Navigation$load(href));
-				}
-			case 'UrlChanged':
-				var url = _v0.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							route: $author$project$A$toRoute(
-								$elm$url$Url$toString(url)),
-							url: url
+							files: A2($elm$core$List$cons, file, files),
+							hover: false
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:
-				var userInfo = _v0.a;
-				var _v4 = A2($elm$core$Debug$log, 'userInfo : ', userInfo);
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							userInfo: $elm$core$Maybe$Just(userInfo)
-						}),
-					$elm$core$Platform$Cmd$none);
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
-var $author$project$A$OnDrag = {$: 'OnDrag'};
-var $author$project$A$dragArea = A2(
-	$elm$html$Html$div,
-	_List_fromArray(
-		[
-			A2(
-			$elm$html$Html$Events$on,
-			'dragstart',
-			$elm$json$Json$Decode$succeed($author$project$A$OnDrag)),
-			A2($elm$html$Html$Attributes$style, 'height', '100px'),
-			A2($elm$html$Html$Attributes$style, 'width', '100px'),
-			A2($elm$html$Html$Attributes$style, 'padding', '100px'),
-			A2($elm$html$Html$Attributes$style, 'background', '#AABB33')
-		]),
-	_List_fromArray(
-		[
-			$elm$html$Html$text('Drag Area')
-		]));
-var $author$project$A$OnDragover = {$: 'OnDragover'};
+var $author$project$D$DragEnter = {$: 'DragEnter'};
+var $author$project$D$DragLeave = {$: 'DragLeave'};
+var $author$project$D$GotFile = {$: 'GotFile'};
+var $author$project$D$Pick = {$: 'Pick'};
 var $elm$file$File$decoder = _File_decoder;
+var $elm$json$Json$Decode$andThen = _Json_andThen;
 var $elm$json$Json$Decode$fail = _Json_fail;
 var $elm$json$Json$Decode$oneOrMoreHelp = F2(
 	function (toValue, xs) {
@@ -11271,6 +10831,14 @@ var $elm$json$Json$Decode$oneOrMore = F2(
 			$elm$json$Json$Decode$oneOrMoreHelp(toValue),
 			$elm$json$Json$Decode$list(decoder));
 	});
+var $author$project$D$dropDecoder = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['dataTransfer', 'files']),
+	A2($elm$json$Json$Decode$oneOrMore, $author$project$D$GotFiles, $elm$file$File$decoder));
+var $author$project$D$hijack = function (msg) {
+	return _Utils_Tuple2(msg, true);
+};
 var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
 	return {$: 'MayPreventDefault', a: a};
 };
@@ -11281,223 +10849,101 @@ var $elm$html$Html$Events$preventDefaultOn = F2(
 			event,
 			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
 	});
-var $author$project$A$dropArea = function () {
-	var hijack = function (msg) {
-		return _Utils_Tuple2(msg, true);
-	};
-	var hijackOn = F2(
-		function (event, decoder) {
-			return A2(
-				$elm$html$Html$Events$preventDefaultOn,
-				event,
-				A2($elm$json$Json$Decode$map, hijack, decoder));
-		});
-	var dropDecoder = A2(
-		$elm$json$Json$Decode$at,
-		_List_fromArray(
-			['dataTransfer', 'files']),
-		A2($elm$json$Json$Decode$oneOrMore, $author$project$A$ImgFileSelected, $elm$file$File$decoder));
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				A2(hijackOn, 'drop', dropDecoder),
-				A2(
-				$elm$html$Html$Events$preventDefaultOn,
-				'dragover',
-				$elm$json$Json$Decode$succeed(
-					_Utils_Tuple2($author$project$A$OnDragover, true))),
-				A2($elm$html$Html$Attributes$style, 'width', '100px'),
-				A2($elm$html$Html$Attributes$style, 'height', '100px'),
-				A2($elm$html$Html$Attributes$style, 'padding', '200px'),
-				A2($elm$html$Html$Attributes$style, 'background', '#AABB99')
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text('Drop Area')
-			]));
-}();
-var $author$project$A$ImgFileRequested = {$: 'ImgFileRequested'};
-var $elm$html$Html$img = _VirtualDom_node('img');
-var $elm$html$Html$Attributes$src = function (url) {
-	return A2(
-		$elm$html$Html$Attributes$stringProperty,
-		'src',
-		_VirtualDom_noJavaScriptOrHtmlUri(url));
-};
-var $author$project$A$viewImg = function (imgFileUrl) {
-	return A2(
-		$elm$html$Html$img,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$src(imgFileUrl)
-			]),
-		_List_Nil);
-};
-var $author$project$A$viewFile = function (model) {
-	return A2(
-		$elm$html$Html$div,
-		_List_Nil,
-		_List_fromArray(
-			[
-				A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text(
-						$elm$core$Debug$toString(model.imgFile))
-					])),
-				A2(
-				$elm$html$Html$button,
-				_List_fromArray(
-					[
-						$elm$html$Html$Events$onClick($author$project$A$ImgFileRequested)
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text('ImgFileRequested')
-					])),
-				A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				A2(
-					$elm$core$List$map,
-					function (file) {
-						return $author$project$A$viewImg(
-							A2($elm$core$Maybe$withDefault, '', file));
-					},
-					model.imgFile))
-			]));
-};
-var $author$project$A$viewLink = function (path) {
-	return A2(
-		$elm$html$Html$li,
-		_List_Nil,
-		_List_fromArray(
-			[
-				A2(
-				$elm$html$Html$a,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$href(path)
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text(path)
-					]))
-			]));
-};
-var $author$project$A$view = function (model) {
+var $author$project$D$hijackOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$html$Html$Events$preventDefaultOn,
+			event,
+			A2($elm$json$Json$Decode$map, $author$project$D$hijack, decoder));
+	});
+var $elm$core$Debug$toString = _Debug_toString;
+var $author$project$D$view = function (model) {
 	return {
 		body: _List_fromArray(
 			[
 				A2(
 				$elm$html$Html$div,
-				_List_Nil,
 				_List_fromArray(
 					[
 						A2(
-						$elm$html$Html$div,
-						_List_Nil,
+						$elm$html$Html$Attributes$style,
+						'border',
+						model.hover ? '6px dashed purple' : '6px dashed #ccc'),
+						A2($elm$html$Html$Attributes$style, 'border-radius', '20px'),
+						A2($elm$html$Html$Attributes$style, 'width', '480px'),
+						A2($elm$html$Html$Attributes$style, 'height', '100px'),
+						A2($elm$html$Html$Attributes$style, 'margin', '100px auto'),
+						A2($elm$html$Html$Attributes$style, 'padding', '20px'),
+						A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+						A2($elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+						A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
+						A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
+						A2(
+						$author$project$D$hijackOn,
+						'dragenter',
+						$elm$json$Json$Decode$succeed($author$project$D$DragEnter)),
+						A2(
+						$author$project$D$hijackOn,
+						'dragover',
+						$elm$json$Json$Decode$succeed($author$project$D$DragEnter)),
+						A2(
+						$author$project$D$hijackOn,
+						'dragleave',
+						$elm$json$Json$Decode$succeed($author$project$D$DragLeave)),
+						A2($author$project$D$hijackOn, 'drop', $author$project$D$dropDecoder)
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick($author$project$D$Pick)
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Upload Images')
+							])),
+						A2(
+						$elm$html$Html$span,
+						_List_fromArray(
+							[
+								A2($elm$html$Html$Attributes$style, 'color', '#ccc')
+							]),
 						_List_fromArray(
 							[
 								$elm$html$Html$text(
-								$elm$url$Url$toString(model.url))
-							])),
+								$elm$core$Debug$toString(model))
+							]))
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
 						A2(
-						$elm$html$Html$div,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text(
-								$elm$core$Debug$toString(model.flagsData))
-							])),
+						$elm$html$Html$Events$preventDefaultOn,
+						'drop',
+						$elm$json$Json$Decode$succeed(
+							_Utils_Tuple2($author$project$D$GotFile, true))),
 						A2(
-						$elm$html$Html$div,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text(
-								$elm$core$Debug$toString(model.route))
-							])),
-						A2(
-						$elm$html$Html$div,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text(
-								$elm$core$Debug$toString(model.userInfo))
-							])),
-						A2(
-						$elm$html$Html$div,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text(
-								$elm$core$Debug$toString(model.fileList))
-							])),
-						A2(
-						$elm$html$Html$ul,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$author$project$A$viewLink('/'),
-								$author$project$A$viewLink('/home'),
-								$author$project$A$viewLink('/about'),
-								$author$project$A$viewLink('/other')
-							])),
-						A2(
-						$elm$html$Html$div,
-						_List_Nil,
-						_List_fromArray(
-							[
-								function () {
-								var _v0 = model.route;
-								switch (_v0.$) {
-									case 'NotFound':
-										return A2(
-											$elm$html$Html$div,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text('NotFound PAGE')
-												]));
-									case 'Top':
-										return A2(
-											$elm$html$Html$div,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text('TOP PAGE')
-												]));
-									case 'Home':
-										return A2(
-											$elm$html$Html$div,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text('HOME PAGE')
-												]));
-									default:
-										return A2(
-											$elm$html$Html$div,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text('ABOUT PAGE')
-												]));
-								}
-							}()
-							])),
-						$author$project$A$viewFile(model),
-						$author$project$A$dragArea,
-						$author$project$A$dropArea
+						$elm$html$Html$Events$preventDefaultOn,
+						'dragover',
+						$elm$json$Json$Decode$succeed(
+							_Utils_Tuple2($author$project$D$DragEnter, true))),
+						A2($elm$html$Html$Attributes$style, 'width', '100px'),
+						A2($elm$html$Html$Attributes$style, 'height', '100px'),
+						A2($elm$html$Html$Attributes$style, 'padding', '100px'),
+						A2($elm$html$Html$Attributes$style, 'background', '#BBDD44')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('original D & D')
 					]))
 			]),
-		title: model.title
+		title: 'd & d'
 	};
 };
-var $author$project$A$main = $elm$browser$Browser$application(
-	{init: $author$project$A$init, onUrlChange: $author$project$A$UrlChanged, onUrlRequest: $author$project$A$UrlRequested, subscriptions: $author$project$A$subsc, update: $author$project$A$update, view: $author$project$A$view});
-_Platform_export({'A':{'init':$author$project$A$main($elm$json$Json$Decode$value)({"versions":{"elm":"0.19.1"},"types":{"message":"A.Msg","aliases":{"Url.Url":{"args":[],"type":"{ protocol : Url.Protocol, host : String.String, port_ : Maybe.Maybe Basics.Int, path : String.String, query : Maybe.Maybe String.String, fragment : Maybe.Maybe String.String }"},"A.User":{"args":[],"type":"{ id : String.String, name : String.String, age : Basics.Int }"}},"unions":{"A.Msg":{"args":[],"tags":{"UrlRequested":["Browser.UrlRequest"],"UrlChanged":["Url.Url"],"ReceivedUserInfo":["A.User"],"ImgFileRequested":[],"ImgFileSelected":["File.File","List.List File.File"],"ImgaFileSelected":["File.File"],"ImgFileLoaded":["Result.Result String.String String.String"],"OnDrag":[],"OnDragover":[],"OnDrop":[],"OnDraggable":["String.String"],"OnDropzone":["String.String"],"GotFiles":["File.File","List.List File.File"]}},"File.File":{"args":[],"tags":{"File":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"List.List":{"args":["a"],"tags":{}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Url.Protocol":{"args":[],"tags":{"Http":[],"Https":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Browser.UrlRequest":{"args":[],"tags":{"Internal":["Url.Url"],"External":["String.String"]}}}}})}});}(this));
+var $author$project$D$main = $elm$browser$Browser$application(
+	{init: $author$project$D$init, onUrlChange: $author$project$D$OnUrlChanged, onUrlRequest: $author$project$D$OnUrlRequested, subscriptions: $author$project$D$subscriptions, update: $author$project$D$update, view: $author$project$D$view});
+_Platform_export({'D':{'init':$author$project$D$main(
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"D.Msg","aliases":{"Url.Url":{"args":[],"type":"{ protocol : Url.Protocol, host : String.String, port_ : Maybe.Maybe Basics.Int, path : String.String, query : Maybe.Maybe String.String, fragment : Maybe.Maybe String.String }"}},"unions":{"D.Msg":{"args":[],"tags":{"Pick":[],"DragEnter":[],"DragLeave":[],"GotFiles":["File.File","List.List File.File"],"GotFile":[],"OnUrlRequested":["Browser.UrlRequest"],"OnUrlChanged":["Url.Url"]}},"File.File":{"args":[],"tags":{"File":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"List.List":{"args":["a"],"tags":{}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Url.Protocol":{"args":[],"tags":{"Http":[],"Https":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Browser.UrlRequest":{"args":[],"tags":{"Internal":["Url.Url"],"External":["String.String"]}}}}})}});}(this));

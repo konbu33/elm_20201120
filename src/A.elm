@@ -38,6 +38,7 @@ type alias Model =
   , userInfo : Maybe User
   , route : Route
   , imgFile : List (Maybe String)
+  , fileList : List File.File
   }
 
 init : JD.Value ->  Url.Url -> Nav.Key -> (Model, Cmd Msg)
@@ -50,7 +51,7 @@ init flags url key =
                   Err e ->
                     { initUrl = "FlagsData Decoer Error." }
   in
-    ( Model flagsData url key "abc" Nothing NotFound []
+    ( Model flagsData url key "abc" Nothing NotFound [] []
     , Cmd.none
     )
 
@@ -110,11 +111,48 @@ type Msg
   | ReceivedUserInfo User
   | ImgFileRequested
   | ImgFileSelected File.File (List File.File)
+  | ImgaFileSelected File.File
   | ImgFileLoaded (Result String String)
+  | OnDrag
+  | OnDragover
+  | OnDrop
+  | OnDraggable String
+  | OnDropzone String
+  | GotFiles File.File (List File.File)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case Debug.log "msg : " msg of
+    GotFiles file files ->
+      ( { model | fileList = file :: files }
+      , Cmd.none
+      )
+    
+    OnDraggable str ->
+      ( model
+      , Cmd.none
+      )
+
+    OnDropzone str ->
+      ( model
+      , Cmd.none
+      )
+
+    OnDrag ->
+      ( model
+      , Cmd.none
+      )
+
+    OnDragover ->
+      ( model
+      , Cmd.none
+      )
+
+    OnDrop ->
+      ( model
+      , Cmd.none
+      )
+
     ImgFileRequested ->
       ( model
       , FS.files ["image/jpeg"] ImgFileSelected
@@ -132,6 +170,11 @@ update msg model =
         --, Cmd.batch <| List.map (\task -> Task.attempt ImgFileLoaded task) fileUrlList
         )
 
+    ImgaFileSelected file ->
+      ( model
+      , Task.attempt ImgFileLoaded <| File.toUrl file
+      )
+  
     ImgFileLoaded result ->
       let
         imgFile = case result of
@@ -192,6 +235,7 @@ view model =
       , div [] [ text <| Debug.toString <| model.flagsData ]
       , div [] [ text <| Debug.toString <| model.route ]
       , div [] [ text <| Debug.toString <| model.userInfo ]
+      , div [] [ text <| Debug.toString <| model.fileList]
       , ul []
           [
             viewLink "/"
@@ -212,6 +256,8 @@ view model =
               div [] [ text "ABOUT PAGE" ]
         ]
       , viewFile model
+      , dragArea 
+      , dropArea 
       ]
   ]}
 
@@ -237,3 +283,47 @@ viewImg : String -> Html Msg
 viewImg imgFileUrl =
   img [ src imgFileUrl ] []
 
+
+dragArea : Html Msg
+dragArea =
+  div
+    [
+      on "dragstart" <| JD.succeed OnDrag 
+    , style "height" "100px"
+    , style "width"  "100px"
+    , style "padding"  "100px"
+    , style "background"  "#AABB33"
+    ]
+    [ text "Drag Area" ]
+
+
+dropArea : Html Msg
+dropArea =
+  let
+    dropDecoder : JD.Decoder Msg
+    dropDecoder =
+      JD.at ["dataTransfer","files"] (JD.oneOrMore ImgFileSelected File.decoder)
+      --JD.at ["dataTransfer","files"] (JD.oneOrMore GotFiles File.decoder)
+    
+    hijackOn : String -> JD.Decoder msg -> Attribute msg
+    hijackOn event decoder =
+      preventDefaultOn event (JD.map hijack decoder)
+
+    hijack : msg -> (msg, Bool)
+    hijack msg =
+      (msg, True)
+
+  in
+    div
+      [
+      --  preventDefaultOn "drop" <| JD.succeed (OnDrop, True)
+        hijackOn "drop" dropDecoder
+      , preventDefaultOn "dragover" <| JD.succeed (OnDragover, True)
+      , style "width" "100px"
+      , style "height" "100px"
+      , style "padding"  "200px"
+      , style "background" "#AABB99"
+      ]
+      [
+        text "Drop Area"
+      ]
